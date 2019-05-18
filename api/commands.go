@@ -10,29 +10,29 @@ import (
 	"github.com/crepehat/OrchestraCPE/heartbeat"
 )
 
-func SendHeartBeat(state heartbeat.State) error {
+func SendHeartBeat(state heartbeat.State) (heartbeat.Command, error) {
 	heartBeat := heartbeat.HeartBeat{
 		DeviceId: "10",
 		State:    state,
 	}
 	apiString, err := json.Marshal(heartBeat)
 	if err != nil {
-		return err
+		return heartBeat.Command, err
 	}
 	fmt.Printf("Sending state: %s\n", apiString)
 	resp, err := client.Post(heartbeatApi, "application/json", bytes.NewReader(apiString))
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return heartBeat.Command, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(bodyBytes))
-	var commandReceived heartbeat.Command
-	err = json.Unmarshal(bodyBytes, &commandReceived)
-	fmt.Printf("Received command: %+v\n", commandReceived)
+	var heartBeatReceived heartbeat.HeartBeat
+	err = json.Unmarshal(bodyBytes, &heartBeatReceived)
+	fmt.Printf("Received command: %+v\n", heartBeatReceived.Command)
 
-	return nil
+	return heartBeatReceived.Command, nil
 }
 
 func SendConfig(reqConfig config.Config) error {

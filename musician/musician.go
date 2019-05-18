@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/crepehat/OrchestraCPE/heartbeat"
@@ -51,8 +53,15 @@ func main() {
 		}
 	}()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "swag")
-	})
-	http.ListenAndServe("127.0.0.1:6967", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	http.HandleFunc("/", replyState)
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+}
+
+func replyState(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Swag."))
 }
