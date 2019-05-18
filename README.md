@@ -4,7 +4,7 @@ API schema
 
 heartBeat endpoint
 
-{"device_id":"10","command":{"magnitude":0,"duration":0,"command_timeout":0},"state":{"available":true,"max_output":10,"max_output_duration":10,"current_command":{"magnitude":0,"duration":0,"command_timeout":0}}}
+{"device_id":"10","command":{"magnitude":0,"duration":0,"command_timeout":0},"state":{"available":true,"max_output":10,"max_output_duration":10,"current_command":{"magnitude":0,"duration":0,"command_timeout":0},"energised":false,"current_output":0}}
 
 config endpoint
 
