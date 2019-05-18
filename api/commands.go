@@ -20,7 +20,7 @@ func SendHeartBeat(state heartbeat.State) error {
 		return err
 	}
 	fmt.Printf("Sending state: %s\n", apiString)
-	resp, err := client.Post("http://127.0.0.1:6969", "application/json", bytes.NewReader(apiString))
+	resp, err := client.Post(heartbeatApi, "application/json", bytes.NewReader(apiString))
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -42,7 +42,7 @@ func SendConfig(reqConfig config.Config) error {
 		return err
 	}
 	fmt.Printf("Sending config: %s\n", apiString)
-	resp, err := client.Post("http://127.0.0.1:6969", "application/json", bytes.NewReader(apiString))
+	resp, err := client.Post(configApi, "application/json", bytes.NewReader(apiString))
 	if err != nil {
 		fmt.Println(err)
 		return err

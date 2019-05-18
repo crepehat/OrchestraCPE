@@ -18,11 +18,13 @@ func main() {
 		MaxOutputDuration: 10,
 	}
 
-	updateTicker := time.NewTicker(5 * time.Second)
+	heartbeatTicker := time.NewTicker(5 * time.Second)
+	configTicker := time.NewTicker(6 * time.Second)
 
+	// heartbeat
 	go func() {
 		for {
-			<-updateTicker.C
+			<-heartbeatTicker.C
 			api.SendHeartBeat(state)
 
 		}
@@ -31,7 +33,7 @@ func main() {
 	// config checker
 	go func() {
 		for {
-			<-updateTicker.C
+			<-configTicker.C
 			var values []config.Value
 			value := config.Value{
 				Format:  "csv",
