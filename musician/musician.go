@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/crepehat/OrchestraCPE/heartbeat"
+
 	"github.com/crepehat/OrchestraCPE/api"
-	"github.com/crepehat/OrchestraCPE/inputs"
+	"github.com/crepehat/OrchestraCPE/config"
 )
 
 func main() {
-	state := api.State{
-		Commandable:       true,
+	state := heartbeat.State{
+		Available:         true,
 		MaxOutput:         10,
 		MaxOutputDuration: 10,
 	}
@@ -21,15 +23,29 @@ func main() {
 	go func() {
 		for {
 			<-updateTicker.C
-			api.Update(state)
+			api.SendHeartBeat(state)
 
 		}
 	}()
 
+	// config checker
 	go func() {
 		for {
 			<-updateTicker.C
-			inputs.CsvGetValue("swag", 2)
+			var values []config.Value
+			value := config.Value{
+				Format:  "csv",
+				Details: "tbd",
+			}
+			values = append(values, value)
+			reqConfig := config.Config{
+				ObjectId:    "69",
+				VillageId:   "70",
+				Type:        "Storage",
+				Values:      values,
+				Commandable: true,
+			}
+			api.SendConfig(reqConfig)
 		}
 	}()
 

@@ -3,16 +3,56 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+
+	"github.com/crepehat/OrchestraCPE/config"
+	"github.com/crepehat/OrchestraCPE/heartbeat"
 )
 
-func Update(state State) error {
-	newApi := API{
-		State: state,
+func SendHeartBeat(state heartbeat.State) error {
+	heartBeat := heartbeat.HeartBeat{
+		DeviceId: "10",
+		State:    state,
 	}
-	apiString, err := json.Marshal(newApi)
+	apiString, err := json.Marshal(heartBeat)
 	if err != nil {
 		return err
 	}
-	client.Post("127.0.0.1:6969", "application/json", bytes.NewReader(apiString))
+	fmt.Printf("Sending state: %s\n", apiString)
+	resp, err := client.Post("http://127.0.0.1:6969", "application/json", bytes.NewReader(apiString))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(bodyBytes))
+	var commandReceived heartbeat.Command
+	err = json.Unmarshal(bodyBytes, &commandReceived)
+	fmt.Printf("Received command: %+v\n", commandReceived)
+
+	return nil
+}
+
+func SendConfig(reqConfig config.Config) error {
+
+	apiString, err := json.Marshal(reqConfig)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Sending config: %s\n", apiString)
+	resp, err := client.Post("http://127.0.0.1:6969", "application/json", bytes.NewReader(apiString))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(bodyBytes))
+	var returnedConfig config.Config
+	err = json.Unmarshal(bodyBytes, &returnedConfig)
+	fmt.Printf("Received config: %+v\n", returnedConfig)
+
 	return nil
 }
