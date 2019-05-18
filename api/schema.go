@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-type API struct {
-	Command Command `json:"command"`
-	State   State   `json:"state"`
+type HeartBeat struct {
+	DeviceId string  `json:"device_id"`
+	Command  Command `json:"command"`
+	State    State   `json:"state"`
 }
 
 type Command struct {
