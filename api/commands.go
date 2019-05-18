@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/crepehat/OrchestraCPE/config"
-	"github.com/crepehat/OrchestraCPE/heartbeat"
+	"github.com/crepehat/OrchestraCPE/device"
 )
 
-func SendHeartBeat(state heartbeat.State) (heartbeat.Command, error) {
-	heartBeat := heartbeat.HeartBeat{
+func SendHeartBeat(state device.State) (device.Command, error) {
+	heartBeat := HeartBeat{
 		DeviceId: "10",
 		State:    state,
 	}
@@ -27,16 +26,16 @@ func SendHeartBeat(state heartbeat.State) (heartbeat.Command, error) {
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(bodyBytes))
-	var heartBeatReceived heartbeat.HeartBeat
+	// fmt.Println(string(bodyBytes))
+	var heartBeatReceived HeartBeat
 	err = json.Unmarshal(bodyBytes, &heartBeatReceived)
 	fmt.Printf("Received command: %+v\n", heartBeatReceived.Command)
 
 	return heartBeatReceived.Command, nil
 }
 
-func SyncConfig(reqConfig config.Config) (config.Config, error) {
-	var retConfig config.Config
+func SyncConfig(reqConfig device.Config) (device.Config, error) {
+	var retConfig device.Config
 	apiString, err := json.Marshal(reqConfig)
 	if err != nil {
 		return retConfig, err
@@ -49,8 +48,8 @@ func SyncConfig(reqConfig config.Config) (config.Config, error) {
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(bodyBytes))
-	var returnedConfig config.Config
+	// fmt.Println(string(bodyBytes))
+	var returnedConfig device.Config
 	err = json.Unmarshal(bodyBytes, &returnedConfig)
 	fmt.Printf("Received config: %+v\n", returnedConfig)
 

@@ -7,25 +7,29 @@ import (
 	"os"
 	"time"
 
-	"github.com/crepehat/OrchestraCPE/heartbeat"
-
 	"github.com/crepehat/OrchestraCPE/api"
-	"github.com/crepehat/OrchestraCPE/config"
+	"github.com/crepehat/OrchestraCPE/device"
 )
 
 func main() {
-	var state heartbeat.State
-	var command heartbeat.Command
+	var state device.State
+	var currentCommand device.Command
 	var err error
-	var currentConfig config.Config
-	state = heartbeat.State{
+	// value
+	currentConfig := device.Config{
+		ObjectId: "a",
+		Type:     "producer",
+		// Values:   values,
+	}
+
+	state = device.State{
 		Available:         true,
 		MaxOutput:         10,
 		MaxOutputDuration: 10,
 	}
 
-	heartbeatTicker := time.NewTicker(5 * time.Second)
-	configTicker := time.NewTicker(6 * time.Second)
+	heartbeatTicker := time.NewTicker(1 * time.Second)
+	configTicker := time.NewTicker(5 * time.Second)
 	stateCheckTicker := time.NewTicker(1 * time.Second)
 	stateSetTicket := time.NewTicker(1 * time.Second)
 
@@ -33,10 +37,14 @@ func main() {
 	go func() {
 		for {
 			<-stateCheckTicker.C
-			fmt.Println("Checking local state")
-			for _, value := range currentConfig.Values {
-				fmt.Println(value)
+			// fmt.Println("Checking local state")
+			for _, extractor := range currentConfig.Extractors {
+				fmt.Println(extractor)
 			}
+			for _, insertor := range currentConfig.Inserters {
+				fmt.Println(insertor)
+			}
+
 		}
 	}()
 
@@ -44,7 +52,7 @@ func main() {
 	go func() {
 		for {
 			<-stateSetTicket.C
-			fmt.Println("Setting state")
+			// fmt.Println("Setting state")
 		}
 	}()
 
@@ -52,11 +60,11 @@ func main() {
 	go func() {
 		for {
 			<-heartbeatTicker.C
-			command, err = api.SendHeartBeat(state)
+			currentCommand, err = api.SendHeartBeat(state)
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println(command)
+			// fmt.Println("Got currentCommand back: ", currentCommand)
 
 		}
 	}()
@@ -65,20 +73,18 @@ func main() {
 	go func() {
 		for {
 			<-configTicker.C
-			var values []config.Value
-			value := config.Value{
-				Format:  "csv",
-				Details: "tbd",
-			}
-			values = append(values, value)
-			reqConfig := config.Config{
-				ObjectId:    "69",
-				VillageId:   "70",
-				Type:        "Storage",
-				Values:      values,
+			reqConfig := device.Config{
+				ObjectId:  "69",
+				VillageId: "70",
+				Type:      "Storage",
+				// Values:      values,
 				Commandable: true,
 			}
-			api.SyncConfig(reqConfig)
+			currentConfig, err = api.SyncConfig(reqConfig)
+			if err != nil {
+				fmt.Println("Error receiving config: ", err.Error())
+			}
+			fmt.Printf("Received config: %+v\n", currentConfig)
 		}
 	}()
 
@@ -87,7 +93,7 @@ func main() {
 		port = "8080"
 	}
 	http.HandleFunc("/config", currentConfig.ShowHandler)
-	// http.HandleFunc("/config", replyState)
+	http.HandleFunc("/command", currentCommand.ShowHandler)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }

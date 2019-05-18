@@ -1,16 +1,4 @@
-package heartbeat
-
-type HeartBeat struct {
-	DeviceId string  `json:"device_id"`
-	Command  Command `json:"command"`
-	State    State   `json:"state"`
-}
-
-type Command struct {
-	Magnitude      int `json:"magnitude"`
-	Duration       int `json:"duration"`
-	CommandTimeout int `json:"command_timeout"`
-}
+package device
 
 type State struct {
 	Available         bool    `json:"available"`
