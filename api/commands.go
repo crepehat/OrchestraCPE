@@ -35,17 +35,17 @@ func SendHeartBeat(state heartbeat.State) (heartbeat.Command, error) {
 	return heartBeatReceived.Command, nil
 }
 
-func SendConfig(reqConfig config.Config) error {
-
+func SyncConfig(reqConfig config.Config) (config.Config, error) {
+	var retConfig config.Config
 	apiString, err := json.Marshal(reqConfig)
 	if err != nil {
-		return err
+		return retConfig, err
 	}
 	fmt.Printf("Sending config: %s\n", apiString)
 	resp, err := client.Post(configApi, "application/json", bytes.NewReader(apiString))
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return retConfig, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -54,5 +54,5 @@ func SendConfig(reqConfig config.Config) error {
 	err = json.Unmarshal(bodyBytes, &returnedConfig)
 	fmt.Printf("Received config: %+v\n", returnedConfig)
 
-	return nil
+	return retConfig, nil
 }

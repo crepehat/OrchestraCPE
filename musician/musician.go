@@ -14,7 +14,11 @@ import (
 )
 
 func main() {
-	state := heartbeat.State{
+	var state heartbeat.State
+	var command heartbeat.Command
+	var err error
+	var currentConfig config.Config
+	state = heartbeat.State{
 		Available:         true,
 		MaxOutput:         10,
 		MaxOutputDuration: 10,
@@ -22,12 +26,37 @@ func main() {
 
 	heartbeatTicker := time.NewTicker(5 * time.Second)
 	configTicker := time.NewTicker(6 * time.Second)
+	stateCheckTicker := time.NewTicker(1 * time.Second)
+	stateSetTicket := time.NewTicker(1 * time.Second)
+
+	// check state
+	go func() {
+		for {
+			<-stateCheckTicker.C
+			fmt.Println("Checking local state")
+			for _, value := range currentConfig.Values {
+				fmt.Println(value)
+			}
+		}
+	}()
+
+	// set state
+	go func() {
+		for {
+			<-stateSetTicket.C
+			fmt.Println("Setting state")
+		}
+	}()
 
 	// heartbeat
 	go func() {
 		for {
 			<-heartbeatTicker.C
-			api.SendHeartBeat(state)
+			command, err = api.SendHeartBeat(state)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println(command)
 
 		}
 	}()
@@ -49,7 +78,7 @@ func main() {
 				Values:      values,
 				Commandable: true,
 			}
-			api.SendConfig(reqConfig)
+			api.SyncConfig(reqConfig)
 		}
 	}()
 
@@ -57,11 +86,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	http.HandleFunc("/", replyState)
+	http.HandleFunc("/config", currentConfig.ShowHandler)
+	// http.HandleFunc("/config", replyState)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
-}
-
-func replyState(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Swag."))
 }
