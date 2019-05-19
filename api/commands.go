@@ -11,7 +11,7 @@ import (
 
 func SendHeartBeat(state device.State) (device.Command, error) {
 	heartBeat := HeartBeat{
-		DeviceId: "10",
+		DeviceId: "a",
 		State:    state,
 	}
 	apiString, err := json.Marshal(heartBeat)

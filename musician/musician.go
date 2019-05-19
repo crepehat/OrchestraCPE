@@ -5,7 +5,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/crepehat/OrchestraCPE/interact"
 
 	"github.com/crepehat/OrchestraCPE/api"
 	"github.com/crepehat/OrchestraCPE/device"
@@ -19,13 +22,11 @@ func main() {
 	currentConfig := device.Config{
 		ObjectId: "a",
 		Type:     "producer",
-		// Values:   values,
 	}
 
 	state = device.State{
-		Available:         true,
-		MaxOutput:         10,
-		MaxOutputDuration: 10,
+		Available: true,
+		MaxOutput: 10,
 	}
 
 	heartbeatTicker := time.NewTicker(1 * time.Second)
@@ -37,7 +38,18 @@ func main() {
 	go func() {
 		for {
 			<-stateCheckTicker.C
-			// fmt.Println("Checking local state")
+			output, err := interact.CsvGetValue("legacy.csv", 0)
+			if err != nil {
+				fmt.Println(err)
+			}
+			maxOutput, err := interact.CsvGetValue("legacy.csv", 1)
+			if err != nil {
+				fmt.Println(err)
+			}
+			state.CurrentOutput, _ = strconv.Atoi(output)
+			state.MaxOutput, _ = strconv.Atoi(maxOutput)
+
+			// this is where we would iterate through the extractors and insertors
 			for _, extractor := range currentConfig.Extractors {
 				fmt.Println(extractor)
 			}

@@ -8,9 +8,9 @@ import (
 )
 
 type HeartBeat struct {
-	DeviceId string         `json:"id"`
-	Command  device.Command `json:"command"`
-	State    device.State   `json:"state"`
+	DeviceId string         `json:"id"`                // gives this
+	Command  device.Command `json:"command,omitempty"` // receives this
+	State    device.State   `json:"state,omitempty"`   // gives this
 }
 
 var client http.Client
